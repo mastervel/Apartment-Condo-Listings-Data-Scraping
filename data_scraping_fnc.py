@@ -1,20 +1,15 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[17]:
-
-
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
 def make_detailed_df():
     url = 'https://www.rew.ca/properties/areas/vancouver-bc/sort/latest/asc/page/1?property_type=apartment-condo&query=Vancouver%2C+BC'
-    url_pg2 = 'https://www.rew.ca/properties/areas/vancouver-bc/type/apartment-condo/sort/latest/desc/page/2?query=Vancouver%2C+BC'
     html_text = requests.get(url).text
     soup = BeautifulSoup(html_text, 'lxml')
     houses = soup.find_all(lambda tag: tag.name == 'article' and 
                                        tag.get('class') == ['displaypanel'])
+    # This emtpy lists below are the lists that will be appended by each listing scraped. Later the list will be combined using zip()
+    # and then converted into a dataframe that we want.
     prices = []
     ttl_squ_feet = []
     maintance = []
@@ -30,6 +25,10 @@ def make_detailed_df():
     appliances_list = []
     neighborhood_list = []
     hyperlink = []
+    
+    # We loop through the houses variable which is a list of all the listings. However we want to gather more details of the listing like 
+    # the amenities, year built, and appliances which are not on the web page with the url variable above. Therefore we loop through the
+    # houses variable to get these extra details about the listings using the links in the 'a' tag of each item in the houses lists. 
     for house in houses: 
         house_href = house.div.div.a['href']
         house_url = requests.get(f'https://www.rew.ca/{house_href}').text
@@ -46,6 +45,8 @@ def make_detailed_df():
         house_details = soup.find_all('tbody')
         price_details = house_details[0].find_all('tr')
         list_price = price_details[0].td.text
+        
+        # Some listings do not have details pertaining to gross taxes and maintenance fees 
         if 'Gross Taxes' not in str(price_details):
             gross_t = 'NaN'
         else: gross_t = price_details[1].td.text
@@ -54,6 +55,7 @@ def make_detailed_df():
         elif 'Gross Taxes' not in str(price_details): 
             maintenance_fees = price_details[1].td.text.replace('\n','')
         else: maintenance_fees = price_details[2].td.text.replace('\n','')
+        
         home_facts = house_details[1].find_all('tr')
         bdrms = home_facts[0].td.text
         bthrms = home_facts[1].td.text
@@ -62,6 +64,7 @@ def make_detailed_df():
         title = home_facts[4].td.text
         style = home_facts[5].td.text
         
+        # This is a rather complicated if statement but it essentially replaces missing values with 'NaN' for the features seen in the if statement
         headers = soup.find_all('th')
         if 'Features' in str(headers):
             features = home_facts[6].td.text
@@ -168,27 +171,11 @@ def make_detailed_df():
                           ))
     df = pd.DataFrame(list_of_str,columns=my_columns)
     return df  
-print('Setup Complete')
-
-
-# In[18]:
-
-
-dataframe = make_detailed_df()
-dataframe
-
-
-# In[19]:
 
 
 def save_df(df,filename):
     df.to_csv(fr'/Users/veliristimaki/Downloads/data_scaping/{filename}.csv', index = False)
     
+    
+dataframe = make_detailed_df()
 save_df(dataframe,'housing_pg1')
-
-
-# In[ ]:
-
-
-
-
