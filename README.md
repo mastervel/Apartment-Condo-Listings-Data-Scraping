@@ -7,3 +7,5 @@ The first step on this journey would involve gathering data which is what this d
 the files **data_scraping_fnc.ipynb** and **data_scraping_fnc.py** contains the code I used to data scrape the page on rew.ca corresponding to apartment/condos in Vancouver, BC sorted by the most recent entries on the site. If you want to use it you would have to change the filepaths. 
 
 **housing_pg1.csv** contains the data from the data scraping of the first page of the webpage. Now I want to scrape more pages on the site as I don't have enough data points with only 20 listings. 
+
+The **data_scraping_final.py** is an updated version of **data_scraping_fnc.py**. It is able to scrape all listings for apartment/condo on the rew.ca website. The data from running this is stored in the data folder. 
